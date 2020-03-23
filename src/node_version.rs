@@ -38,18 +38,18 @@ impl TryFrom<String> for NodeVersion {
         let parts: Vec<&str> = version.split(".").collect();
         match parts.len() {
             1 => {
-                let major_version = parts.get(0).unwrap().parse::<u64>()?;
+                let major_version = parts[0].parse::<u64>()?;
                 Ok(Self::Major(major_version))
             }
             2 => {
-                let major_version = parts.get(0).unwrap().parse::<u64>()?;
-                let minor_version = parts.get(1).unwrap().parse::<u64>()?;
+                let major_version = parts[0].parse::<u64>()?;
+                let minor_version = parts[1].parse::<u64>()?;
                 Ok(Self::MajorMinor(major_version, minor_version))
             }
             3 => {
-                let major_version = parts.get(0).unwrap().parse::<u64>()?;
-                let minor_version = parts.get(1).unwrap().parse::<u64>()?;
-                let patch_version = parts.get(2).unwrap().parse::<u64>()?;
+                let major_version = parts[0].parse::<u64>()?;
+                let minor_version = parts[1].parse::<u64>()?;
+                let patch_version = parts[2].parse::<u64>()?;
                 Ok(Self::Specific(major_version, minor_version, patch_version))
             }
             _ => Err(InvalidVersionError),
@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn major_version() {
-        assert_eq!(NodeVersion::try_from("10"), Ok(NodeVersion::Major(10)),);
+        assert_eq!(NodeVersion::try_from("10"), Ok(NodeVersion::Major(10)));
     }
 
     #[test]
@@ -95,9 +95,9 @@ mod tests {
 
     #[test]
     fn invalid_version() {
-        assert_eq!(NodeVersion::try_from("19.a"), Err(InvalidVersionError),);
+        assert_eq!(NodeVersion::try_from("19.a"), Err(InvalidVersionError));
 
-        assert_eq!(NodeVersion::try_from(".1"), Err(InvalidVersionError),);
+        assert_eq!(NodeVersion::try_from(".1"), Err(InvalidVersionError));
 
         assert_eq!(
             NodeVersion::try_from("hello world"),
