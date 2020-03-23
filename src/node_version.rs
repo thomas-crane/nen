@@ -20,9 +20,9 @@ impl From<std::num::ParseIntError> for InvalidVersionError {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum NodeVersion {
-    Major(u32),
-    MajorMinor(u32, u32),
-    Specific(u32, u32, u32),
+    Major(u64),
+    MajorMinor(u64, u64),
+    Specific(u64, u64, u64),
 }
 
 impl TryFrom<&str> for NodeVersion {
@@ -38,18 +38,18 @@ impl TryFrom<String> for NodeVersion {
         let parts: Vec<&str> = version.split(".").collect();
         match parts.len() {
             1 => {
-                let major_version = parts.get(0).unwrap().parse::<u32>()?;
+                let major_version = parts.get(0).unwrap().parse::<u64>()?;
                 Ok(Self::Major(major_version))
             }
             2 => {
-                let major_version = parts.get(0).unwrap().parse::<u32>()?;
-                let minor_version = parts.get(1).unwrap().parse::<u32>()?;
+                let major_version = parts.get(0).unwrap().parse::<u64>()?;
+                let minor_version = parts.get(1).unwrap().parse::<u64>()?;
                 Ok(Self::MajorMinor(major_version, minor_version))
             }
             3 => {
-                let major_version = parts.get(0).unwrap().parse::<u32>()?;
-                let minor_version = parts.get(1).unwrap().parse::<u32>()?;
-                let patch_version = parts.get(2).unwrap().parse::<u32>()?;
+                let major_version = parts.get(0).unwrap().parse::<u64>()?;
+                let minor_version = parts.get(1).unwrap().parse::<u64>()?;
+                let patch_version = parts.get(2).unwrap().parse::<u64>()?;
                 Ok(Self::Specific(major_version, minor_version, patch_version))
             }
             _ => Err(InvalidVersionError),
@@ -57,17 +57,24 @@ impl TryFrom<String> for NodeVersion {
     }
 }
 
+impl From<NodeVersion> for semver::Version {
+    fn from(version: NodeVersion) -> Self {
+        match version {
+            NodeVersion::Major(major) => Self::from((major, 0u64, 0u64)),
+            NodeVersion::MajorMinor(major, minor) => Self::from((major, minor, 0u64)),
+            NodeVersion::Specific(major, minor, patch) => Self::from((major, minor, patch)),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{NodeVersion, InvalidVersionError};
+    use super::{InvalidVersionError, NodeVersion};
     use std::convert::TryFrom;
 
     #[test]
     fn major_version() {
-        assert_eq!(
-            NodeVersion::try_from("10"),
-            Ok(NodeVersion::Major(10)),
-        );
+        assert_eq!(NodeVersion::try_from("10"), Ok(NodeVersion::Major(10)),);
     }
 
     #[test]
@@ -88,15 +95,9 @@ mod tests {
 
     #[test]
     fn invalid_version() {
-        assert_eq!(
-            NodeVersion::try_from("19.a"),
-            Err(InvalidVersionError),
-        );
+        assert_eq!(NodeVersion::try_from("19.a"), Err(InvalidVersionError),);
 
-        assert_eq!(
-            NodeVersion::try_from(".1"),
-            Err(InvalidVersionError),
-        );
+        assert_eq!(NodeVersion::try_from(".1"), Err(InvalidVersionError),);
 
         assert_eq!(
             NodeVersion::try_from("hello world"),
