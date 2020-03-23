@@ -35,7 +35,7 @@ impl TryFrom<&str> for NodeVersion {
 impl TryFrom<String> for NodeVersion {
     type Error = InvalidVersionError;
     fn try_from(version: String) -> Result<Self, Self::Error> {
-        let parts: Vec<String> = version.split(".").into_iter().map(|s| s.into()).collect();
+        let parts: Vec<&str> = version.split(".").collect();
         match parts.len() {
             1 => {
                 let major_version = parts.get(0).unwrap().parse::<u32>()?;
