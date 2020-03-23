@@ -27,3 +27,30 @@ If the requested version of Node.js has not been used before, it will be downloa
 Once the appropriate Node.js version is available, a new environment folder will be created in the nen home directory (`$NEN_HOME`, or `$HOME/.nen` by default).
 
 This environment folder will contain a `bin/` directory which contains symlinks to the appropriate Node.js binaries, and an `.npm-global/` folder in which global npm modules for that environment will be stored.
+
+### Activating an environment
+
+To activate an environment which has been created, the `use` command can be used. The name of the environment to activate must be provided.
+
+```bash
+$ nen use my-node-project
+```
+
+When a project is activated, a few things happen:
+
++ Your current `$PATH` is copied into `$NEN_OLD_PATH`.
++ `$NEN_HOME/environments/my-node-project/.npm-global` is prepended to your `$PATH`.
++ `$NEN_HOME/environments/my-node-project/bin` is prepended to your `$PATH`.
++ `$NPM_CONFIG_PREFIX` is set to `$NEN_HOME/environments/my-node-project/.npm-global`.
++ `$NEN_ENV` is set to the name of your environment.
+
+Be aware that the changes to your `$PATH` are only **additive**. If you already have a global npm modules folder in your path, **it will stay in your path**. This could result in a global module that was installed on your system becoming available in your activated environment.
+
+### Deactivating an environment
+
+To deactivate an environment, the `stop` command. This command will first try to determine if there is an active environment. If both `$NEN_OLD_PATH` *and* `$NEN_ENV` are unset, it is assumed that there is no active environment and the command stops.
+
+If at least one of these variables is set, the following things happen:
+
++ `$NEN_ENV` is unset.
++ If `$NEN_OLD_PATH` is set, it is copied into `$PATH` and then unset.
