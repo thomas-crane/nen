@@ -1,5 +1,5 @@
 mod node_version;
-mod path;
+mod nen_home;
 mod version_list;
 
 use crate::node_version::NodeVersion;
