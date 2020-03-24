@@ -67,6 +67,27 @@ impl From<NodeVersion> for semver::Version {
     }
 }
 
+impl PartialEq<NodeVersion> for semver::Version {
+    fn eq(&self, node_version: &NodeVersion) -> bool {
+        match node_version {
+            NodeVersion::Major(major) => {
+                self.major == *major
+            }
+            NodeVersion::MajorMinor(major, minor) => {
+                self.major == *major && self.minor == *minor
+            }
+            NodeVersion::Specific(major, minor, patch) => {
+                self.major == *major && self.minor == *minor && self.patch == *patch
+            }
+        }
+    }
+}
+impl PartialEq<semver::Version> for NodeVersion {
+    fn eq(&self, version: &semver::Version) -> bool {
+        version == self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{InvalidVersionError, NodeVersion};
