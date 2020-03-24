@@ -48,7 +48,7 @@ Be aware that the changes to your `$PATH` are only **additive**. If you already 
 
 ### Deactivating an environment
 
-To deactivate an environment, the `stop` command. This command will first try to determine if there is an active environment. If both `$NEN_OLD_PATH` *and* `$NEN_ENV` are unset, it is assumed that there is no active environment and the command stops.
+To deactivate an environment, the `stop` command can be used. This command will first try to determine if there is an active environment. If both `$NEN_OLD_PATH` *and* `$NEN_ENV` are unset, it is assumed that there is no active environment and the command stops.
 
 If at least one of these variables is set, the following things happen:
 
