@@ -19,5 +19,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         println!("{:?} is not a valid Node.js version", version);
     }
+    let latest = version_list.latest_version_of(&version);
+    if let Some(v) = latest {
+        println!("The latest version of {:?} is '{}'", &version, v);
+    }
     Ok(())
 }
