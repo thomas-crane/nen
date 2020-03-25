@@ -2,8 +2,10 @@ use std::env;
 use std::error;
 use std::fmt;
 use std::fs;
+use std::fs::DirEntry;
 use std::fs::File;
 use std::io;
+use std::path::Path;
 use std::path::PathBuf;
 
 use crate::node_downloader::{DownloadError, DownloadErrorKind, NodeDownloader};
@@ -91,11 +93,54 @@ impl NenHome {
     }
 }
 
+#[derive(Debug, Clone)]
+/// An error which occurred when getting a node version.
+pub struct ReadVersionError;
+
+impl fmt::Display for ReadVersionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Cannot read node version.")
+    }
+}
+impl error::Error for ReadVersionError {}
+impl From<io::Error> for ReadVersionError {
+    fn from(_: io::Error) -> Self {
+        Self
+    }
+}
+
 pub struct ValidNenHome {
     home: HomeLayout,
 }
 
 impl ValidNenHome {
+    pub async fn create_env(
+        &self,
+        name: &String,
+        version: &NodeVersion,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let env_path = self.home.env_path.join(name);
+        // create the dir, this will fail if it already exists.
+        fs::create_dir(&env_path)?;
+
+        // create the other dirs
+        fs::create_dir(&env_path.join(".npm-global"))?;
+        let bin_path = env_path.join("bin");
+
+        // make sure the requested node version is installed.
+        if !self.has_node_version(&version) {
+            let version_list = VersionList::create().await?;
+            self.download_node_version(&version, &version_list).await?;
+        }
+
+        // get the node version dir and create the symlinks.
+        let node_dir = self.node_version_dir(&version)?;
+        let node_bin_dir = node_dir.path().join("bin");
+        symlink::symlink_dir(node_bin_dir.canonicalize()?, bin_path)?;
+
+        Ok(())
+    }
+
     pub async fn download_node_version(
         &self,
         version: &NodeVersion,
@@ -115,5 +160,19 @@ impl ValidNenHome {
             .map_err(|_| DownloadError(DownloadErrorKind::CannotExtract))?;
 
         Ok(())
+    }
+
+    fn has_node_version(&self, version: &NodeVersion) -> bool {
+        Path::new(&self.home.bin_path.join(version.to_string())).exists()
+    }
+
+    fn node_version_dir(&self, version: &NodeVersion) -> Result<DirEntry, ReadVersionError> {
+        let mut entries = fs::read_dir(&self.home.bin_path.join(version.to_string()))?;
+
+        if let Some(dir) = entries.next() {
+            Ok(dir?)
+        } else {
+            Err(ReadVersionError)
+        }
     }
 }
