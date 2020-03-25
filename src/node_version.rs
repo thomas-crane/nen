@@ -32,6 +32,16 @@ impl TryFrom<&str> for NodeVersion {
     }
 }
 
+impl fmt::Display for NodeVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::Major(major) => write!(f, "{}", major),
+            Self::MajorMinor(major, minor) => write!(f, "{}.{}", major, minor),
+            Self::Specific(major, minor, patch) => write!(f, "{}.{}.{}", major, minor, patch),
+        }
+    }
+}
+
 impl TryFrom<String> for NodeVersion {
     type Error = InvalidVersionError;
     fn try_from(version: String) -> Result<Self, Self::Error> {
@@ -70,12 +80,8 @@ impl From<NodeVersion> for semver::Version {
 impl PartialEq<NodeVersion> for semver::Version {
     fn eq(&self, node_version: &NodeVersion) -> bool {
         match node_version {
-            NodeVersion::Major(major) => {
-                self.major == *major
-            }
-            NodeVersion::MajorMinor(major, minor) => {
-                self.major == *major && self.minor == *minor
-            }
+            NodeVersion::Major(major) => self.major == *major,
+            NodeVersion::MajorMinor(major, minor) => self.major == *major && self.minor == *minor,
             NodeVersion::Specific(major, minor, patch) => {
                 self.major == *major && self.minor == *minor && self.patch == *patch
             }
