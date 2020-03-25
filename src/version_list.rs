@@ -1,5 +1,6 @@
 use regex::Regex;
 use reqwest;
+use reqwest::Url;
 use scraper::{Html, Selector};
 use semver::Version;
 
@@ -40,5 +41,22 @@ impl<'a> VersionList {
 
     pub fn latest_version_of(&self, node_version: &NodeVersion) -> Option<&Version> {
         self.versions.iter().find(|v| *v == node_version)
+    }
+
+    pub fn download_url(&self, node_version: &NodeVersion) -> Option<Url> {
+        let version = self.latest_version_of(node_version)?;
+
+        let mut version_string = String::from("v");
+        version_string.push_str(&version.to_string());
+
+        let mut tarball_string = String::from("node-");
+        tarball_string.push_str(&version_string);
+        tarball_string.push_str(".tar.gz");
+
+        version_string.push('/');
+
+        Url::parse(NODE_URL).ok()?
+            .join(&version_string).ok()?
+            .join(&tarball_string).ok()
     }
 }
