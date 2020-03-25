@@ -36,10 +36,6 @@ impl<'a> VersionList {
         Ok(Self { versions })
     }
 
-    pub fn has_version(&self, version: &Version) -> bool {
-        self.versions.contains(version)
-    }
-
     pub fn latest_version_of(&self, node_version: &NodeVersion) -> Option<&Version> {
         self.versions.iter().find(|v| *v == node_version)
     }
