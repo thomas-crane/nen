@@ -86,9 +86,21 @@ impl NenHome {
         self.home.validate().is_ok()
     }
 
+    /// Returns the path of this nen home.
+    pub fn home_path(&self) -> &PathBuf {
+        &self.home.home_path
+    }
+
     /// Creates any missing folders which are required for this to be a nen home.
     pub fn init_home(self) -> Result<ValidNenHome, io::Error> {
         self.home.create_dirs()?;
+        Ok(ValidNenHome { home: self.home })
+    }
+
+    /// Consumes this nen home and returns a `ValidNenHome` if
+    /// this nen home is valid. Otherwise returns an error.
+    pub fn validate(self) -> Result<ValidNenHome, io::Error> {
+        self.home.validate()?;
         Ok(ValidNenHome { home: self.home })
     }
 }
