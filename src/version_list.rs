@@ -5,6 +5,7 @@ use scraper::{Html, Selector};
 use semver::Version;
 
 use crate::node_version::NodeVersion;
+use crate::platform_string::platform_string;
 
 const NODE_URL: &'static str = "https://nodejs.org/dist/";
 
@@ -51,6 +52,8 @@ impl<'a> VersionList {
 
         let mut tarball_string = String::from("node-");
         tarball_string.push_str(&version_string);
+        tarball_string.push('-');
+        tarball_string.push_str(&platform_string()?);
         tarball_string.push_str(".tar.gz");
 
         version_string.push('/');
